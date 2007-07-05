@@ -1,0 +1,105 @@
+.GownFull_DebugWnd {
+	text-decoration: none;
+	font-size: 100%;
+	border: 1px solid #000000;
+	color: #000000;
+	background: #CCCCCC;
+	text-align: left;
+}
+.GownFull_DebugWnd span {
+	font-size: small;
+	font-weight: bold;
+	color: #000000;
+	background: #CCCCCC;
+}
+.GownFull_DebugWnd_main {
+	font-size: small;
+	width: 600px;
+	height: 400px;
+	overflow: scroll;
+	white-space: nowrap;
+	color: #000000;
+	background: #FFFFFF;
+	text-align: left;
+}
+.GownFull_DebugWnd_msg {
+	font-size: small;
+	color: #000000;
+	background: #FFFFFF;
+	text-align: left;
+}
+.GownFull_MainWnd {
+	text-decoration: none;
+	font-size: 100%;
+	position: absolute;
+	display: table;
+	border: 1px solid #000000;
+	color: #000000;
+	background: #CCCCCC;
+}
+.GownFull_MainWnd ul {
+	display: inline;
+	margin: 0px;
+	padding: 1px;
+}
+.GownFull_MainWnd li {
+	display: inline;
+	list-style: none;
+	text-align: left;
+	color: #000000;
+	background: #CCCCCC;
+	margin: 0px;
+	padding: 0px 1px 0px 1px;
+}
+.GownFull_MainWnd select {
+	width: 128px;
+}
+
+.GownFull_Preedit {
+	color: #0000FF;
+	background: #CCCCCC;
+}
+.GownFull_PreeditStatus {
+	font-size: small;
+	color: #000000;
+	background: #CCCCCC;
+}
+.GownFull_PreeditInvalid {
+	color: #FF0000;
+	background: #666666;
+}
+
+.GownFull_CandidateListWnd {
+	border: 1px solid #000000;
+	display: block;
+	color: #000000;
+	background: #CCCCCC;
+}
+.GownFull_CandidateListWnd ol {
+	font-size: 16px;
+	list-style-type: decimal;
+	margin: 1px 1px 1px 22px;
+	padding: 1px;
+}
+.GownFull_CandidateListWnd span {
+	font-size: small;
+	font-weight: bold;
+	color: #000000;
+	background: #CCCCCC;
+}
+.GownFull_CandidateListWnd li {
+	font-size: small;
+	text-align: left;
+	color: #000000;
+	background: #CCCCCC;
+}
+.GownFull_DisableIM {
+	color: #000000;
+}
+.GownFull_AvailableIM {
+	color: #000000;
+}
+.GownFull_DownloadIM {
+	color: #0000FF;
+}
+
