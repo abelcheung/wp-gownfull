@@ -388,6 +388,16 @@ var lib = Base.extend({
 		if(document.documentElement) return document.documentElement.scrollTop;
 		else return document.body.scrollTop;
 	},
+	GetClientWidth: function()
+	{
+		if(document.documentElement) return document.documentElement.clientWidth;
+		else return document.body.clientWidth;
+	},
+	GetClientHeight: function()
+	{
+		if(document.documentElement) return document.documentElement.clientHeight;
+		else return document.body.clientHeight;
+	},
 	/*  
 	*  (c) 2006 Michael Porter
 	*/
@@ -488,18 +498,28 @@ var GownFullBrowserDetect = Base.extend({
 	use_mouse_addEventListener: null,
 	need_windowreference: null,
 	use_css_position_fixed: null,
-	use_css_expression: null,
+	use_css_position_absolute: null,
+	running_mobile: null,
 
 	init: function()
 	{
 		this.init_useragent();
 		if(this.current_browser == this.BROWSER_UNKNOWN) this.init_objtest();
 
+		Debug.present && (this.current_browser == this.BROWSER_IE) && Debug.trace(0,"GownFullBrowserDetect: Running Internet Explorer.");
+		Debug.present && (this.current_browser == this.BROWSER_FIREFOX) && Debug.trace(0,"GownFullBrowserDetect: Running Mozilla Firefox.");
+		Debug.present && (this.current_browser == this.BROWSER_OPERA) && Debug.trace(0,"GownFullBrowserDetect: Running Opera.");
+		Debug.present && (this.current_browser == this.BROWSER_KONQUEROR) && Debug.trace(0,"GownFullBrowserDetect: Running Konqueror.");
+		Debug.present && (this.current_browser == this.BROWSER_SAFARI) && Debug.trace(0,"GownFullBrowserDetect: Running Safari.");
+		Debug.present && (this.current_browser == this.BROWSER_MINIMO) && Debug.trace(0,"GownFullBrowserDetect: Running Minimo.");
+		Debug.present && (this.current_browser == this.BROWSER_UNKNOWN) && Debug.trace(0,"GownFullBrowserDetect: Running unknown browser.");
+		Debug.present && (this.running_mobile) && Debug.trace(0,"GownFullBrowserDetect: Running Mobile device.");
 		Debug.present && this.use_attachEvent && Debug.trace(0,"GownFullBrowserDetect: GownFull can use attachEvent.");
 		Debug.present && this.use_addEventListener && Debug.trace(0,"GownFullBrowserDetect: GownFull can use addEventListener.");
 		Debug.present && this.use_key_addEventListener && Debug.trace(0,"GownFullBrowserDetect: GownFull should use addEventListener on key events.");
 		Debug.present && this.use_mouse_addEventListener && Debug.trace(0,"GownFullBrowserDetect: GownFull should use addEventListener on mouse events.");
 		Debug.present && this.use_css_position_fixed && Debug.trace(0,"GownFullBrowserDetect: GownFull can use position: fixed in CSS.");
+		Debug.present && this.use_css_position_absolute && Debug.trace(0,"GownFullBrowserDetect: GownFull can use position: absolute in CSS.");
 	},
 	init_useragent: function()
 	{
@@ -517,6 +537,8 @@ var GownFullBrowserDetect = Base.extend({
 		var isKonqueror = (useragent.indexOf('konqueror') < 0) ? false : true;
 		var isSafari = (useragent.indexOf('safari') < 0) ? false : true;
 		var isMinimo = (useragent.indexOf('minimo') < 0) ? false : true;
+		var isPPC = (useragent.indexOf('ppc') < 0) ? false : true;
+		var isWinCE = (useragent.indexOf('windows ce') < 0) ? false : true;
 
 		if(isOpera && isIE) isIE = false;
 
@@ -533,15 +555,15 @@ var GownFullBrowserDetect = Base.extend({
 		this.use_key_addEventListener = (isFirefox || isMinimo || isKonqueror || isSafari) ? true : false;
 		this.use_mouse_addEventListener = (isFirefox || isMinimo || isOpera || isKonqueror || isSafari) ? true : false;
 		this.need_windowreference = (isKonqueror || isSafari) ? true : false;
-		this.use_css_position_fixed = (isFirefox || isMinimo || isOpera || isKonqueror || isSafari) ? true : false;
-
-		Debug.present && (this.current_browser == this.BROWSER_IE) && Debug.trace(0,"GownFullBrowserDetect: Running Internet Explorer.");
-		Debug.present && (this.current_browser == this.BROWSER_FIREFOX) && Debug.trace(0,"GownFullBrowserDetect: Running Mozilla Firefox.");
-		Debug.present && (this.current_browser == this.BROWSER_OPERA) && Debug.trace(0,"GownFullBrowserDetect: Running Opera.");
-		Debug.present && (this.current_browser == this.BROWSER_KONQUEROR) && Debug.trace(0,"GownFullBrowserDetect: Running Konqueror.");
-		Debug.present && (this.current_browser == this.BROWSER_SAFARI) && Debug.trace(0,"GownFullBrowserDetect: Running Safari.");
-		Debug.present && (this.current_browser == this.BROWSER_MINIMO) && Debug.trace(0,"GownFullBrowserDetect: Running Minimo.");
-		Debug.present && (this.current_browser == this.BROWSER_UNKNOWN) && Debug.trace(0,"GownFullBrowserDetect: Running unknown browser.");
+		this.running_mobile = (isPPC || isWinCE) ? true : false;
+		if(this.running_mobile) {
+			this.use_css_position_fixed = false;
+			this.use_css_position_absolute = false;
+		}
+		else {
+			this.use_css_position_fixed = (isFirefox || isMinimo || isOpera || isKonqueror || isSafari) ? true : false;
+			this.use_css_position_absolute = true;
+		}
 	},
 	init_objtest: function()
 	{
@@ -568,24 +590,15 @@ var GownFullBrowserDetect = Base.extend({
 
 
 var GFWindowBehavior = Base.extend({
-	constructor: function()
-	{
-	},
-	InitBehavior: function(win)
-	{
-	},
-	EndBehavior: function(win)
-	{
-	},
-	SetFocus: function(win)
-	{
-	},
-	BringToTop: function(win)
-	{
-	},
-	SetWindowPosition: function(win,x,y)
-	{
-	}
+	constructor: function() {},
+	PreCreateWindow: function(win) {},
+	PostCreateWindow: function(win) {},
+	DestroyWindow: function(win) {},
+	SetFocus: function(win) {},
+	BringToTop: function(win) {},
+	SetWindowPosition: function(win,x,y) {},
+	ShowWindow: function(win) {},
+	SetContent: function(win) {}
 });
 
 var GFWindowsMovableHandler; // to prevent some javascript error 
@@ -603,15 +616,30 @@ GFWindowsMovableHandler = Base.extend({
 	top_z: 1,
 	constructor: null,
 	old_onscroll: null,
+	old_onresize: null,
+	last_width: null,
+	last_height: null,
 	init: function()
 	{	
 		var x = this;
 
-		if(!GownFullBrowserDetect.use_css_position_fixed) {
+		if(GownFullBrowserDetect.use_css_position_fixed) {
+			Debug.trace(0,"GFWindowsMovableHandler: Using position: fixed, attached onresize event.");
+			this.old_onresize = window.onresize;
+			window.onresize = function() { return x.onresize(window.event); }
+		}
+		else if(GownFullBrowserDetect.use_css_position_absolute) {
 			this.old_onscroll = window.onscroll;
 			window.onscroll = function() { return x.onscroll(window.event); }
-			Debug.trace(0,"GFWindowsMovableHandler: Using position: absolute, attached onscroll event.");
+			this.old_onresize = window.onresize;
+			window.onresize = function() { return x.onresize(window.event); }
+			Debug.trace(0,"GFWindowsMovableHandler: Using position: absolute, attached onscroll/onresize event.");
 		}
+		else {
+			Debug.trace(0,"GFWindowsMovableHandler: Movable Window is not supported in this browser.");
+		}
+		this.last_width = lib.GetClientWidth();
+		this.last_height = lib.GetClientHeight();
 	},
 	skipnodeName: {
 		'textarea': true,
@@ -628,33 +656,33 @@ GFWindowsMovableHandler = Base.extend({
 			win.style.left = lib.sprintf('%dpx',x);
 			win.style.top = lib.sprintf('%dpx',y);
 		}
-		else {
+		else if(GownFullBrowserDetect.use_css_position_absolute) {
 			win.style.left = lib.sprintf('%dpx',x + lib.GetScrollX());
 			win.style.top = lib.sprintf('%dpx',y + lib.GetScrollY());
 		}
 	},
-	RegisterWindow: function(win,init_x,init_y)
+	RegisterWindow: function(div_obj,id,init_x,init_y)
 	{	
 		var x = this;
 
 		if(GownFullBrowserDetect.use_mouse_addEventListener) {
-			win.div_obj.addEventListener("mousemove", firefox_mousemove,true);
-			win.div_obj.addEventListener("mousedown", firefox_mousedown,true);
-			win.div_obj.addEventListener("mouseup", firefox_mouseup,true);
+			div_obj.addEventListener("mousemove", firefox_mousemove,true);
+			div_obj.addEventListener("mousedown", firefox_mousedown,true);
+			div_obj.addEventListener("mouseup", firefox_mouseup,true);
 		}
 		else if(GownFullBrowserDetect.use_attachEvent) {
-			win.div_obj.attachEvent("onmousemove", function(e) { return x.onmousemove(e); });
-			win.div_obj.attachEvent("onmousedown", function(e) { return x.onmousedown(e); });
-			win.div_obj.attachEvent("onmouseup", function(e) { return x.onmouseup(e); });
-		}
+			div_obj.attachEvent("onmousemove", function(e) { return x.onmousemove(e); });
+			div_obj.attachEvent("onmousedown", function(e) { return x.onmousedown(e); });
+			div_obj.attachEvent("onmouseup", function(e) { return x.onmouseup(e); });
+		}	
 		else { // use the most generic one (probably fails)
-			win.div_obj.onmousemove = function() { return x.onmousemove(window.event); }
-			win.div_obj.onmousedown = function() { return x.onmousedown(window.event); }
-			win.div_obj.onmouseup = function() { return x.onmouseup(window.event); }
+			div_obj.onmousemove = function() { return x.onmousemove(window.event); }
+			div_obj.onmousedown = function() { return x.onmousedown(window.event); }
+			div_obj.onmouseup = function() { return x.onmouseup(window.event); }
 		}
-		win.div_obj.style.zIndex = this.top_z++;
-		this.registered_id[win.obj_id] = [init_x,init_y];
-		Debug.trace(0,'GFWindowsMovableHandler: Register a window (id=%s)',win.obj_id);
+		div_obj.style.zIndex = this.top_z++;
+		this.registered_id[id] = [init_x,init_y];
+		Debug.trace(0,'GFWindowsMovableHandler: Register a window (id=%s)',id);
 	},
 	UnregisterWindow: function(id)
 	{
@@ -675,15 +703,37 @@ GFWindowsMovableHandler = Base.extend({
 	onscroll: function(e)
 	{
 		for(var key in this.registered_id) {
+			Debug.trace(3,'GFWindowsMovableHandler (onscroll): handling for id=%s',key);
 			var d = document.getElementById(key);
 			var pos = this.registered_id[key];
 			if(!d) {
-				Debug.trace(0,'GFWindowsMovableHandler: Something get wrong, getElementById(%s) fails',key);
+				Debug.trace(0,'GFWindowsMovableHandler (onscroll): Something get wrong, getElementById(%s) fails',key);
 				continue;
 			}
 			this.SetXY(d,pos[0],pos[1]);
 		}
 		if(this.old_onscroll) this.old_onscroll();
+	},
+	onresize: function(e)
+	{
+		for(var key in this.registered_id) {
+			Debug.trace(3,'GFWindowsMovableHandler (onresize): handling for id=%s',key);
+			var d = document.getElementById(key);
+			var pos = this.registered_id[key];
+
+			if(!d) {
+				Debug.trace(0,'GFWindowsMovableHandler (onresize): Something get wrong, getElementById(%s) fails',key);
+				continue;
+			}
+			pos[0] = (pos[0] / this.last_width) * lib.GetClientWidth();
+			pos[0] = Math.round(pos[0]);
+			pos[1] = (pos[1] / this.last_height) * lib.GetClientHeight();
+			pos[1] = Math.round(pos[1]);
+			this.SetXY(d,pos[0],pos[1]);
+		}
+		this.last_width = lib.GetClientWidth();
+		this.last_height = lib.GetClientHeight();
+		if(this.old_onresize) this.old_onresize();
 	},
 	onmousedown: function(e)
 	{
@@ -700,7 +750,7 @@ GFWindowsMovableHandler = Base.extend({
 			if(nodename == 'div' && !this.registered_id[curr.id]) return;
 		}
 
-		if(win) {
+		if(win && win.style) {
 			win.style.zIndex = this.top_z++;
 			
 			this.AttachDocumentHandler(true);
@@ -709,7 +759,7 @@ GFWindowsMovableHandler = Base.extend({
 				this.mouse_offsetx = e.clientX - win.offsetLeft;
 				this.mouse_offsety = e.clientY - win.offsetTop;
 			}
-			else {
+			else if(GownFullBrowserDetect.use_css_position_absolute) {
 				this.mouse_offsetx = e.clientX + lib.GetScrollX() - win.offsetLeft;
 				this.mouse_offsety = e.clientY + lib.GetScrollY() - win.offsetTop;
 			}
@@ -795,98 +845,155 @@ GFWindowsMovableHandler = Base.extend({
 var GFWindowMovableBehavior = GFWindowBehavior.extend({
 	init_x: 0,
 	init_y: 0,
-	constructor: function(init_x,init_y)
+	width: null,
+	height: null,
+	div_obj: null,
+	class_name: null,
+	obj_id: null,
+	constructor: function(id,init_x,init_y,width,height,class_name)
 	{
+		this.obj_id = id;
 		if(init_x) this.init_x = init_x;
 		if(init_y) this.init_y = init_y;
+		if(width) this.width = width;
+		if(height) this.height = height;
+		if(class_name) this.class_name = class_name;
 	},
-	InitBehavior: function(win)
+	PreCreateWindow: function(win)
 	{
+		this.div_obj = document.createElement('div');
+		this.div_obj.id = this.obj_id;
+		this.div_obj.className = this.class_name;
+
+		if(this.width != null) this.div_obj.style.width = lib.sprintf('%dpx',this.width);
+		if(this.height != null) this.div_obj.style.height = lib.sprintf('%dpx',this.height);
+
 		if(GownFullBrowserDetect.use_css_position_fixed) {
-			win.div_obj.style.position = 'fixed';
+			this.div_obj.style.position = 'fixed';
 		}
-		else {
-			win.div_obj.style.position = 'absolute';
+		else if(GownFullBrowserDetect.use_css_position_absolute) {
+			this.div_obj.style.position = 'absolute';
 		}
-		GFWindowsMovableHandler.SetXY(win.div_obj,this.init_x,this.init_y);
-		GFWindowsMovableHandler.RegisterWindow(win,this.init_x,this.init_y);
+		GFWindowsMovableHandler.SetXY(this.div_obj,this.init_x,this.init_y);
+		GFWindowsMovableHandler.RegisterWindow(this.div_obj,this.obj_id,this.init_x,this.init_y);
 	},
-	EndBehavior: function(win)
+	PostCreateWindow: function(win)
 	{
-		GFWindowsMovableHandler.UnregisterWindow(win);
+		document.body.appendChild(this.div_obj);
+	},
+	DestroyWindow: function(win)
+	{
+		GFWindowsMovableHandler.UnregisterWindow(this.obj_id);
+		document.body.removeChild(this.div_obj);
+		this.div_obj = null;
 	},
 	SetFocus: function(win)
 	{
-		if(win.div_obj.focus) win.div_obj.focus();
+		if(this.div_obj.focus) this.div_obj.focus();
 		return true;
 	},
 	BringToTop: function(win)
 	{
-		win.div_obj.style.zIndex = GFWindowsMovableHandler.top_z++;
+		this.div_obj.style.zIndex = GFWindowsMovableHandler.top_z++;
 		return true;
 	},
 	SetWindowPosition: function(win,x,y)
 	{
-		GFWindowsMovableHandler.SetXY(win.div_obj,x,y);
+		GFWindowsMovableHandler.SetXY(this.div_obj,x,y);
 		return true;
-	}
-});
-
-var GFWindow = Base.extend({
-	obj_id: null,
-	behavior: null,
-	div_obj: null,
-	constructor: function(id,class_name,width,height,behavior,hidden,content)
-	{
-		if(behavior) this.behavior = behavior;
-		else this.behavior = new GFWindowBehavior;
-
-		this.div_obj = document.createElement("div");
-		this.div_obj.id = id;
-		this.obj_id = this.div_obj.id;
-		this.div_obj.className = class_name;
-		if(width != null) this.div_obj.style.width = lib.sprintf('%dpx',width);
-		if(height != null) this.div_obj.style.height = lib.sprintf('%dpx',height);
-		if(hidden) this.div_obj.style.display = 'none';
-
-		this.behavior.InitBehavior(this);
-		this.div_obj.innerHTML = content;
-
-		document.body.appendChild(this.div_obj);
 	},
-	GetDIV: function()
-	{
-		return div_obj;
-	},
-	ShowWindow: function(show)
+	ShowWindow: function(win,show)
 	{
 		if(show) this.div_obj.style.display = 'block';
 		else this.div_obj.style.display = 'none';
 		return true;
 	},
-	DestroyWindow: function()
+	SetContent: function(win,content)
 	{
-		this.behavior.EndBehavior(this);
-		document.body.removeChild(this.div_obj);
+		this.div_obj.innerHTML = content;
+	}
+});
+
+var GFWindowFixedBehavior = GFWindowBehavior.extend({
+	div_id: null,
+	div_obj: null,
+	class_name: null,
+	constructor: function(div_id,class_name)
+	{
+		this.div_id = div_id;
+		this.div_obj = document.getElementById(div_id);
+		this.class_name = class_name;
+	},
+	PreCreateWindow: function(win)
+	{
+		this.div_obj.className = this.class_name;
+	},
+	PostCreateWindow: function(win)
+	{
+	},
+	DestroyWindow: function(win)
+	{
+		this.div_obj.innerHTML = '';
+		this.div_obj = null;
+	},
+	SetFocus: function(win)
+	{
+		if(this.div_obj.focus) this.div_obj.focus();
 		return true;
 	},
+	BringToTop: function(win)
+	{
+		return true;
+	},
+	SetWindowPosition: function(win,x,y)
+	{
+		return true;
+	},
+	ShowWindow: function(win,show)
+	{
+		if(show) this.div_obj.style.display = 'block';
+		else this.div_obj.style.display = 'none';
+		return true;
+	},
+	SetContent: function(win,content)
+	{
+		this.div_obj.innerHTML = content;
+	}
+});
+
+var GFWindow = Base.extend({
+	behavior: null,
+	shown: false,
+	constructor: function(behavior,hidden,content)
+	{
+		this.behavior = behavior;
+		this.behavior.PreCreateWindow(this);
+		this.shown = !hidden;
+		this.behavior.ShowWindow(this,!hidden);
+		this.behavior.SetContent(this,content);
+		this.behavior.PostCreateWindow(this);
+	},
+	ShowWindow: function(show) { this.shown = show; return this.behavior.ShowWindow(this,show); },
+	DestroyWindow: function() { return this.behavior.DestroyWindow(this); },
 	SetFocus: function() { return this.behavior.SetFocus(this); },
 	BringToTop: function() { return this.behavior.BringToTop(this); },
 	SetWindowPosition: function(x,y) { return this.behavior.SetWindowPosition(this,x,y); }
 });
 var DebugWindow = GFWindow.extend({
+	obj_id: null,
 	constructor: function(id)
 	{
 		var html;
 		var x = this;
 
+		this.obj_id = id;
 		html = '<span>Debug Console</span><br />';	
 		html += lib.sprintf('<div nowrap="nowrap" class="%s" id="' + id + '_DebugArea"></div><br />',GownFullConfig.debugwin_main_class_name);
 		html += '<button id="' + id + '_Dec">&lt;</button>';
 		html += '<span id="' + id + '_Verbose">&nbsp;</span>';
 		html += '<button id="' + id + '_Inc">&gt;</button>';
 		html += '&nbsp;<button id="' + id + '_Button">Clear</button>';
-		this.base(id,GownFullConfig.debugwin_class_name,null,null,new GFWindowMovableBehavior(400,20),false,html);
+		this.base(new GFWindowMovableBehavior(id,400,20,null,null,GownFullConfig.debugwin_class_name),false,html);
 
 		// get back the button and attach the event
 		if(GownFullBrowserDetect.use_addEventListener) {
@@ -955,7 +1062,6 @@ var DebugWindow = GFWindow.extend({
 });
 var GownFullConfig = Base.extend({
 	constructor: null,
-	default_tags_name: ['textarea','input'],
 	gownfull_base_url: 'http://127.0.0.1/gownfull/',
 	css_file: 'http://127.0.0.1/gownfull/gownfull.css',
 	getim_url: 'http://127.0.0.1/gownfull/getim.php',
@@ -1104,9 +1210,9 @@ var GFMainWindow = GFWindow.extend({
 	TYPE_DISABLED: 0,
 	TYPE_AVAILABLE: 1,
 	TYPE_DOWNLOAD: 2,
-	constructor: function(id,class_name,x,y,width,height,content,selchg_handler)
+	constructor: function(behavior,content,selchg_handler)
 	{
-		this.base(id,class_name,width,height,new GFWindowMovableBehavior(x,y),false,content);
+		this.base(behavior,false,content);
 		this.selchg_handler = selchg_handler;
 	},
 	CreateExtensionDIV: function(id,class_name,width,height,content)
@@ -1151,15 +1257,41 @@ var GFMainWindow = GFWindow.extend({
 });
 
 var GFCandidateListWindow = GFWindow.extend({
-	constructor: function(id,class_name,x,y,width,height,content)
+	constructor: function(behavior,content)
 	{
-		this.base(id,class_name,width,height,new GFWindowMovableBehavior(x,y),true,content);
+		this.base(behavior,true,content);
 	},
 	GetCandiadateObject: function(i)
 	{
 	},
 	SetCandidate: function(i,str)
 	{
+	}
+});
+
+var GownFullObjectHandler = Base.extend({
+	sendstr_id_handler: {},
+	sendstr_nodeName_handler: {},
+	constructor: function()
+	{
+	},
+	SendString: function(obj,str)
+	{
+		var handler;
+
+		handler = null;
+		// check if there is a id
+		if(obj.id && this.sendstr_id_handler[obj.id]) handler = this.sendstr_id_handler[obj.id];
+		if(!handler && obj.nodeName) { 
+			var nodename = obj.nodeName.toLowerCase();
+			handler = this.sendstr_nodeName_handler[nodename];
+		}
+		if(!handler) {
+			Debug.trace(0,'GownFullObjectHandler: no object handler exists for this object (nodeName=%s).',obj.nodeName);
+			return false; // no handler exist
+		}
+
+		return handler(obj,str);
 	}
 });
 
@@ -1176,13 +1308,19 @@ var GownFullBuilder = Base.extend({
 	constructor: function()
 	{
 	},
-	LoadCSS: function(file)
+	BuildObjectHandler: function()
 	{
 	},
-	BuildMainWindow: function(id)
+	BuildCSS: function()
 	{
 	},
-	BuildCandidateListWindow: function(id)
+	BuildMainWindow: function()
+	{
+	},
+	BuildCandidateListWindow: function()
+	{
+	},
+	PostCreateGownFull: function()
 	{
 	},
 	AttachHandler: function(obj)
@@ -1191,7 +1329,8 @@ var GownFullBuilder = Base.extend({
 	}
 });
 var GenericMainWindow = GFMainWindow.extend({
-	constructor: function(id,selchg_handler)
+	obj_id: null,
+	constructor: function(id,selchg_handler,fixed)
 	{
 		var html;
 		var x = this;
@@ -1203,7 +1342,9 @@ var GenericMainWindow = GFMainWindow.extend({
 		html += lib.sprintf('<li><span id="%s_Preedit" class="%s">&nbsp;</span></li>',id,GownFullConfig.preedit_class_name);
 		html += '</ul>';
 
-		this.base(id,GownFullConfig.mainwin_class_name,50,400,null,null,html,selchg_handler);
+		this.obj_id = id;
+		if(fixed) this.base(new GFWindowFixedBehavior(id,GownFullConfig.mainwin_class_name),html,selchg_handler);
+		else this.base(new GFWindowMovableBehavior(id,0,0,null,null,GownFullConfig.mainwin_class_name),html,selchg_handler);
 
 		var sel = this.GetSelect();
 		if(sel) {
@@ -1319,7 +1460,8 @@ var GenericMainWindow = GFMainWindow.extend({
 		var buf;
 		
 		buf = document.getElementById(this.obj_id + '_Preedit');
-		if(buf && buf.firstChild) buf.firstChild.nodeValue = str;
+//		if(buf && buf.firstChild) buf.firstChild.nodeValue = str;
+		buf.innerHTML = str;
 	},
 	ResetPreedit: function()
 	{
@@ -1328,7 +1470,8 @@ var GenericMainWindow = GFMainWindow.extend({
 		buf = this.GetPreedit();
 		if(buf) {
 			if(buf.className) buf.className = GownFullConfig.preedit_class_name;
-			if(buf.firstChild) buf.firstChild.nodeValue = '';
+//			if(buf.firstChild) buf.firstChild.nodeValue = '';
+			buf.innerHTML = '';
 		}
 	},
 	SetPreeditText: function(str)
@@ -1338,7 +1481,8 @@ var GenericMainWindow = GFMainWindow.extend({
 		buf = this.GetPreedit();
 		if(buf) {
 			if(buf.className) buf.className = GownFullConfig.preedit_status_class_name;
-			if(buf.firstChild) buf.firstChild.nodeValue = str;
+			//if(buf.firstChild) buf.firstChild.nodeValue = str;
+			buf.innerHTML = str;
 		}
 	},
 	DeletePreedit: function(c)
@@ -1350,11 +1494,15 @@ var GenericMainWindow = GFMainWindow.extend({
 		buf = this.GetPreedit();
 		if(buf) {
 			if(buf.className && buf.className != GownFullConfig.preedit_class_name) this.ResetPreedit();
-			if(buf.firstChild) {
+			var str = buf.innerHTML;
+			str = str.substr(0,str.length - c);
+			buf.innerHTML = str;
+/*			if(buf.firstChild) {
 				var str = buf.firstChild.nodeValue;
 				str = str.substr(0,str.length - c);
 				buf.firstChild.nodeValue = str;
 			}
+*/
 		}
 	},
 	AppendPreedit: function(c)
@@ -1365,11 +1513,13 @@ var GenericMainWindow = GFMainWindow.extend({
 		if(buf) {
 			if(buf.className) {
 				if(buf.className != GownFullConfig.preedit_class_name) {
-					 if(buf.firstChild) buf.firstChild.nodeValue = '';
+					 //if(buf.firstChild) buf.firstChild.nodeValue = '';
+					buf.innerHTML = '';
 				}
 				buf.className = GownFullConfig.preedit_class_name;
 			}
-			if(buf.firstChild) buf.firstChild.nodeValue += c;
+			buf.innerHTML += c;
+//			if(buf.firstChild) buf.firstChild.nodeValue += c;
 		}
 	},
 	SetPreeditInvalid: function()
@@ -1386,15 +1536,20 @@ var GenericMainWindow = GFMainWindow.extend({
 });
 
 var GenericCandidateListWindow = GFCandidateListWindow.extend({
-	constructor: function(id)
+	obj_id: null,
+	constructor: function(id,fixed)
 	{
 		var html = '<span>Candidates</span>';
 		html += '<ol>';
+
 		for(i=1;i<=9;i++) {
 			html += lib.sprintf('<li id="%s_Candidate%d">&nbsp;</li>',id,i);
 		}
 		html += '</ol>';
-		this.base(id,GownFullConfig.candwin_class_name,500,100,128,null,html);
+
+		this.obj_id = id;
+		if(fixed) this.base(new GFWindowFixedBehavior(id,GownFullConfig.candwin_class_name),html);
+		else this.base(new GFWindowMovableBehavior(id,Math.round(lib.GetClientWidth()/3),0,128,null,GownFullConfig.candwin_class_name),html);
 	},
 	GetCandidateObject: function(i)
 	{
@@ -1413,34 +1568,167 @@ var GenericCandidateListWindow = GFCandidateListWindow.extend({
 	}
 });
 
+var GenericGownFullObjectHandler = GownFullObjectHandler.extend({
+	constructor: function()
+	{
+	},
+	sendstr_nodeName_handler: {
+		'input': function(o,s) 
+		{
+			if(o.type && o.type == 'text') {
+				if(o.focus) o.focus();
+				if(o.selectionStart != null) {
+					var last_scrollleft = o.scrollLeft;
+					var last_scrolltop = o.scrollTop;
+					var start = o.selectionStart;
+					var end = o.selectionEnd;
+					var len = o.value.length;
+	
+					o.value = o.value.substring(0,start) + s + o.value.substring(end,len);
+					start = start + s.length;
+					end = start;
+					if(o.setSelectionRange) o.setSelectionRange(start,end);
+					else {
+						o.selectionStart = start;
+						o.selectionEnd = end;
+					}
+					o.scrollLeft = last_scrollleft;
+					o.scrollTop = last_scrolltop;
+				}
+				else if(document.selection) {
+					var sel = document.selection.createRange();
+					sel.text = s;
+					sel.collapse(false);
+					sel.select();
+				}
+				else o.value += s;
+			}
+			else return false;
+		},
+		'textarea': function(o,s) 
+		{
+			if(o.focus) o.focus();
+			if(o.selectionStart != null) {
+				var last_scrollleft = o.scrollLeft;
+				var last_scrolltop = o.scrollTop;
+				var start = o.selectionStart;
+				var end = o.selectionEnd;
+				var len = o.value.length;
+
+				o.value = o.value.substring(0,start) + s + o.value.substring(end,len);
+				start = start + s.length;
+				end = start;
+				if(o.setSelectionRange) o.setSelectionRange(start,end);
+				else {
+					o.selectionStart = start;
+					o.selectionEnd = end;
+				}
+				o.scrollLeft = last_scrollleft;
+				o.scrollTop = last_scrolltop;
+			}
+			else if(document.selection) {
+				var sel = document.selection.createRange();
+				sel.text = s;
+				sel.collapse(false);
+				sel.select();
+			}
+			else o.value += s;
+		},
+		'html': function(o,s)  // iframe
+		{
+			var win;
+
+			if(!o.GownFull_iframe) {
+				Debug.trace(0,'GenericGownFullObjectHandler: (iframe) handler cannot get iframe reference.');
+				return;
+			}
+			o = o.GownFull_iframe;
+
+			GenericGownFullObjectHandler.SendHTML(o,s);
+		}
+	}
+},
+{
+	SendHTML: function(ifme,html)
+	{
+		try {
+			var doc;
+
+			if(ifme.document) doc = ifme.document;
+			else if(ifme.contentDocument) doc = ifme.contentDocument;
+
+			doc.execCommand('insertHTML',false,html);
+			return true;
+		}
+		catch(e) {}
+		try {
+			var sel = null;
+
+			if(ifme.getSelection) sel = ifme.getSelection();
+			else if(ifme.document && ifme.document.selection) sel = ifme.document.selection;
+
+			var rng = sel.createRange();
+			rng.pasteHTML(html);
+			rng.collapse(false);
+			rng.select();
+			return true;
+		}
+		catch(e) {}
+		Debug.trace(0,"GenericGownFullBuilder: SendHTML: Failure to send HTML to iframe, maybe current browser is not supported.");
+		return false;
+	}
+});
+
 var GenericGownFullBuilder = GownFullBuilder.extend({
 	show: true,
 	last_im: 0,
+	config: null,
 
-	constructor: function()
+	constructor: function(config)
 	{
-		Debug.trace(0,'GownFullBuilder: Using GenericGownFullBuilder.');
+		this.config = {};
+		this.config.mainwin_id = GownFullConfig.mainwin_id;
+		this.config.candwin_id = GownFullConfig.candwin_id;
+		this.config.css_file = GownFullConfig.css_file;
+		this.config.fixed = false;
+		this.config.applyall = true;
+
+		if(config) {
+			for(var key in config) this.config[key] = config[key];
+		}
+		Debug.trace(0,'GownFullBuilder: Using GenericGownFullBuilder (fixed=%s).',this.config.fixed);
 		this.base();
 	},
-	LoadCSS: function(file)
+	BuildObjectHandler: function()
 	{
-		return lib.LoadCSSFile(file);
+		return new GenericGownFullObjectHandler;
 	},
-	BuildMainWindow: function(id,selchg)
+	BuildCSS: function()
 	{
-		return new GenericMainWindow(GownFullConfig.mainwin_id,selchg);
+		return lib.LoadCSSFile(this.config.css_file);
 	},
-	BuildCandidateListWindow: function(id)
+	BuildMainWindow: function(selchg)
 	{
-		return new GenericCandidateListWindow(GownFullConfig.candwin_id);
+		if(this.config.fixed) return new GenericMainWindow(this.config.mainwin_id,selchg,true);
+		else return new GenericMainWindow(this.config.mainwin_id,selchg);
+	},
+	BuildCandidateListWindow: function()
+	{
+		if(this.config.fixed) return new GenericCandidateListWindow(this.config.candwin_id,true);
+		else return new GenericCandidateListWindow(this.config.candwin_id);
 	},
 	onKeyDown: function(e)
 	{
 		var key = e.which ? e.which : e.keyCode;
 		var obj = lib.GetEventTarget(e);
 		var b;
+		var m = 0;
 
-		b = this.keydown_handler(obj,key);
+		if(e.altKey) m |= GownFull.KEY_ALT;
+		else if(e.ctrlKey) m |= GownFull.KEY_CTRL;
+		else if(e.shiftKey) m |= GownFull.KEY_SHIFT;
+
+		b = this.keydown_handler(obj,key,m);
 		
 		if(!b) {
 			if(e.preventDefault) e.preventDefault();
@@ -1452,8 +1740,13 @@ var GenericGownFullBuilder = GownFullBuilder.extend({
 		var key = e.which ? e.which : e.keyCode;
 		var obj = lib.GetEventTarget(e);
 		var b;
+		var m = 0;
 
-		b = this.keyup_handler(obj,key);
+		if(e.altKey) m |= GownFull.KEY_ALT;
+		else if(e.ctrlKey) m |= GownFull.KEY_CTRL;
+		else if(e.shiftKey) m |= GownFull.KEY_SHIFT;
+
+		b = this.keyup_handler(obj,key,m);
 
 		if(!b) {
 			if(e.preventDefault) e.preventDefault();
@@ -1465,8 +1758,13 @@ var GenericGownFullBuilder = GownFullBuilder.extend({
 		var key = e.which ? e.which : e.keyCode;
 		var obj = lib.GetEventTarget(e);
 		var b;
+		var m = 0;
 
-		b = this.keypress_handler(obj,key);
+		if(e.altKey) m |= GownFull.KEY_ALT;
+		else if(e.ctrlKey) m |= GownFull.KEY_CTRL;
+		else if(e.shiftKey) m |= GownFull.KEY_SHIFT;
+
+		b = this.keypress_handler(obj,key,m);
 
 		if(!b) {
 			if(e.preventDefault) e.preventDefault();
@@ -1476,6 +1774,16 @@ var GenericGownFullBuilder = GownFullBuilder.extend({
 	AttachHandler: function(obj)
 	{
 		var x = this;
+
+		if(obj.nodeName && obj.nodeName.toLowerCase() == 'iframe') {
+			var doc;
+
+			if(obj.document) doc = obj.document;
+			else if(obj.contentDocument) doc = obj.contentDocument;
+
+			if(doc.documentElement) doc.documentElement.GownFull_iframe = obj;
+			obj = doc;
+		}
 
 		if(GownFullBrowserDetect.use_key_addEventListener) {
 			obj.addEventListener("keydown", function(e) { return x.onKeyDown(e); },true);
@@ -1488,6 +1796,43 @@ var GenericGownFullBuilder = GownFullBuilder.extend({
 			obj.onkeyup = function() { return x.onKeyUp(window.event); }
 		}
 		return true;
+	},
+	ApplyInputMethodByTagName: function(name,filter)
+	{
+		var nodes,c,i;
+
+		nodes = document.getElementsByTagName(name);
+		c = 0;
+		for(i=0;i<nodes.length;i++) {
+			if(!filter || filter(nodes.item(i))) {
+				if(this.AttachHandler(nodes.item(i))) c++;
+			}
+		}
+		Debug.trace(0,"GenericGownFullBuilder: Input Method attached for HTML tag %s, %d attached.",name,c);
+		return c;
+	},
+	PostCreateGownFull: function()
+	{
+		if(this.config.applyall) {
+			this.ApplyInputMethodByTagName('input',function(obj) { return (obj.type && obj.type == 'text') ? true : false; });
+			this.ApplyInputMethodByTagName('textarea');
+			this.ApplyInputMethodByTagName('iframe', function(obj) {
+				var doc;
+
+				if(obj.contentDocument) doc = obj.contentDocument;
+				else if(obj.document) doc = obj.document;
+				else return false;
+
+				try {
+					if(doc.designMode && doc.designMode == 'on') return true;
+					else return false;
+				}
+				catch(e) {
+					Debug.trace(0,"GenericGownFullBuilder: PostCreateGownFull, apply for (iframe), exception: %s",e);
+					return false;
+				}
+			});
+		}
 	}
 });
 var GFIterator = Base.extend({
@@ -1699,7 +2044,7 @@ var InputMethod = ProgressiveObject.extend({
            return true if the key is not handled by the InputMethod.
            return false if the key is handled by the InputMethod.
 	*/
-	keydown_handler: function(obj,key) 
+	keydown_handler: function(obj,key,modifiers) 
 	{
 		return true;
 	},
@@ -1711,7 +2056,7 @@ var InputMethod = ProgressiveObject.extend({
            return true if the key is not handled by the InputMethod.
            return false if the key is handled by the InputMethod.
 	*/
-	keyup_handler: function(obj,key)
+	keyup_handler: function(obj,key,modifiers)
 	{
 		return true;
 	},
@@ -1723,7 +2068,7 @@ var InputMethod = ProgressiveObject.extend({
            return true if the key is not handled by the InputMethod.
            return false if the key is handled by the InputMethod.
 	*/
-	keypress_handler: function(obj,key) 
+	keypress_handler: function(obj,key,modifiers)
 	{
 		return true;
 	},
@@ -1764,92 +2109,9 @@ var OutputModifier = Base.extend({
 	{
 	}
 });
-var GownFullObjectHandler = Base.extend({
-	sendstr_id_handler: {},
-	sendstr_nodeName_handler: {},
-	constructor: function()
-	{
-	},
-	SendString: function(obj,str)
-	{
-		var handler;
-
-		handler = null;
-		// check if there is a id
-		if(obj.id && this.sendstr_id_handler[obj.id]) handler = this.sendstr_id_handler[obj.id];
-		if(!handler && obj.nodeName) { 
-			var nodename = obj.nodeName.toLowerCase();
-			handler = this.sendstr_nodeName_handler[nodename];
-		}
-		if(!handler) {
-			Debug.trace(0,'GownFullObjectHandler: no object handler exists for this object.');
-			return false; // no handler exist
-		}
-
-		return handler(obj,str);
-	}
-});
-
-var GownFullDefaultObjectHandler = GownFullObjectHandler.extend({
-	constructor: function()
-	{
-	},
-	sendstr_nodeName_handler: {
-		'input': function(o,s) 
-		{
-			if(o.type && o.type == 'text') {
-				if(o.focus) o.focus();
-				if(o.selectionStart != null) {
-					var start = o.selectionStart;
-					var end = o.selectionEnd;
-					var len = o.value.length;
-	
-					o.value = o.value.substring(0,start) + s + o.value.substring(end,len);
-					start = start + s.length;
-					end = start;
-					if(o.setSelectionRange) o.setSelectionRange(start,end);
-					else {
-						o.selectionStart = start;
-						o.selectionEnd = end;
-					}
-				}
-				else if(document.selection) {
-					var sel = document.selection.createRange();
-					sel.text = s;
-				}
-				else o.value += s;
-			}
-			else return false;
-		},
-		'textarea': function(o,s) 
-		{
-			if(o.focus) o.focus();
-			if(o.selectionStart != null) {
-				var start = o.selectionStart;
-				var end = o.selectionEnd;
-				var len = o.value.length;
-
-				o.value = o.value.substring(0,start) + s + o.value.substring(end,len);
-				start = start + s.length;
-				end = start;
-				if(o.setSelectionRange) o.setSelectionRange(start,end);
-				else {
-					o.selectionStart = start;
-					o.selectionEnd = end;
-				}
-			}
-			else if(document.selection) {
-				var sel = document.selection.createRange();
-				sel.text = s;
-			}
-			else o.value += s;
-		}
-	}
-});
 var GownFullMenu = Base.extend({
 	ime: null,
 	available: false,
-	showime: true,
 	last_im: 0,
 	escape_last: 0,
 
@@ -1857,15 +2119,13 @@ var GownFullMenu = Base.extend({
 
 	{ display: 'Toggle on/off IME', func: function(menu)
 		{
-			menu.showime = !menu.showime;
-
-			if(menu.showime) {
-				menu.ime.ToggleIME(true);
-				menu.ime.SelectInputMethod(menu.last_im);
-			}
-			else {
+			if(menu.ime.mainwin.shown) {
 				menu.last_im = menu.ime.im_current;
 				menu.ime.ToggleIME(false);
+			}
+			else {
+				menu.ime.ToggleIME(true);
+				menu.ime.SelectInputMethod(menu.last_im);
 			}
 		}
 	},
@@ -1942,36 +2202,34 @@ var GownFullMenu = Base.extend({
 });
 
 var GownFull = Base.extend({
-	constructor: function(builder,applyall)
+	constructor: function(builder)
 	{
 		var i;
 		var x = this;
 
 		this.builder = builder;
+		this.handlers = builder.BuildObjectHandler();
 
-		builder.LoadCSS(GownFullConfig.css_file);
-		this.mainwin = builder.BuildMainWindow(GownFullConfig.mainwin_id, function(v) { x.onSelectChange(v); });
-		this.candwin = builder.BuildCandidateListWindow(GownFullConfig.candwin_id);
-		builder.SetHandler(function(obj,key) { return x.keydown_handler(obj,key); },
-				function(obj,key) { return x.keyup_handler(obj,key); },
-				function(obj,key) { return x.keypress_handler(obj,key); });
+		builder.BuildCSS();
+		this.mainwin = builder.BuildMainWindow(function(v) { x.onSelectChange(v); });
+		this.candwin = builder.BuildCandidateListWindow();
+		builder.SetHandler(function(obj,key,m) { return x.keydown_handler(obj,key,m); },
+				function(obj,key,m) { return x.keyup_handler(obj,key,m); },
+				function(obj,key,m) { return x.keypress_handler(obj,key,m); });
 
-		if(applyall) {
-			for(i=0;i<GownFullConfig.default_tags_name.length;i++) {
-				this.ApplyInputMethodByTagName(GownFullConfig.default_tags_name[i]);
-			}
-		}
 		if(GownFull.instance) {
 			Debug.trace(0,'GownFull: Error, more than one instance of GownFull created.');
 		}
 		GownFull.instance = this;
 
 		this.menu = new GownFullMenu(this);
+
+		builder.PostCreateGownFull();
 	},
 
 	mainwin: null,
 	candwin: null,
-	handlers: new GownFullDefaultObjectHandler(),
+	handlers: null,
 	builder: null,
 
 	preedit: '',
@@ -2014,53 +2272,53 @@ var GownFull = Base.extend({
 			}
 		}
 	},
-	keydown_handler: function(obj,key)
+	keydown_handler: function(obj,key,modifiers)
 	{
 		var b;
 
-		Debug.trace(4,'GownFull: keydown_handler key=%d',key);
+		Debug.trace(4,'GownFull: keydown_handler key=%d, modifiers=%b',key,modifiers);
 
 		b = true;
 		if(this.im_current > 0) {
 			var im = this.im_array[this.im_current-1];
 	
-			b = im.keydown_handler(obj,key);
+			b = im.keydown_handler(obj,key,modifiers);
 		}
 
-		if(!this.menu.keydown_handler(obj,key)) b = false;
+		if(!this.menu.keydown_handler(obj,key,modifiers)) b = false;
 		
 		return b;
 	},
-	keyup_handler: function(obj,key)
+	keyup_handler: function(obj,key,modifiers)
 	{
 		var b;
 
-		Debug.trace(4,'GownFull: keyup_handler key=%d',key);
+		Debug.trace(4,'GownFull: keyup_handler key=%d, modifiers=%b',key,modifiers);
 
 		b = true;
 
 		if(this.im_current > 0) {
 			var im = this.im_array[this.im_current-1];
 	
-			b = im.keyup_handler(obj,key);
+			b = im.keyup_handler(obj,key,modifiers);
 		}
-		if(!this.menu.keyup_handler(obj,key)) b = false;
+		if(!this.menu.keyup_handler(obj,key,modifiers)) b = false;
 		return b;
 	},
-	keypress_handler: function(obj,key)
+	keypress_handler: function(obj,key,modifiers)
 	{
 		var b;
 
-		Debug.trace(4,'GownFull: keypress_handler key=%d',key);
+		Debug.trace(4,'GownFull: keypress_handler key=%d, modifiers=%b',key,modifiers);
 
 		b = true;
 
 		if(this.im_current > 0) {
 			var im = this.im_array[this.im_current-1];
 
-			b = im.keypress_handler(obj,key);
+			b = im.keypress_handler(obj,key,modifiers);
 		}
-		if(!this.menu.keypress_handler(obj,key)) b = false;
+		if(!this.menu.keypress_handler(obj,key,modifiers)) b = false;
 		return b;
 	},
 	RegisterInputMethod: function(im)
@@ -2138,19 +2396,6 @@ var GownFull = Base.extend({
 			Debug.trace(1,"GownFull: ToggleIME off");
 		}
 	},
-	ApplyInputMethod: function(obj) { return this.builder.AttachHandler(obj); },
-	ApplyInputMethodByTagName: function(name)
-	{
-		var nodes,c,i;
-
-		nodes = document.getElementsByTagName(name);
-		c = 0;
-		for(i=0;i<nodes.length;i++) {
-			if(this.ApplyInputMethod(nodes.item(i))) c++;
-		}
-		Debug.trace(0,"GownFull: Input Method attached for HTML tag %s, %d attached.",name,c);
-		return c;
-	},
 	GetPreedit: function() { return this.preedit; },
 	ResetPreedit: function()
 	{
@@ -2218,6 +2463,9 @@ var GownFull = Base.extend({
 	}
 },
 {
+	KEY_SHIFT: 1,
+	KEY_CTRL: 2,
+	KEY_ALT: 4,
 	instance: null
 });
 var SimpleTableInputMethod = InputMethod.extend({

@@ -15,6 +15,7 @@ $CFG->GownFull_javascript_debug_file = 'generic_debug.js';
 $CFG->Available_IM = array(
 array('displayname' => 'Greek', 'objname' => 'GreekInputMethod'),
 array('displayname' => 'Cheque Amount', 'objname' => 'ChequeInputMethod'),
+array('displayname' => 'mimeTeX', 'objname' => 'mimeTeXInputMethod'),
 array('displayname' => '\u901f\u6210', 'objname' => 'QuickInputMethod'),
 array('displayname' => '\u5009\u9821', 'objname' => 'CangJie3InputMethod'),
 array('displayname' => '\u6ce8\u97f3', 'objname' => 'ZhuYinInputMethod'),
