@@ -1,0 +1,14 @@
+2007-07-11  Abel Cheung  <abelcheung@gmail.com>
+
+	* wp-gownfull.php:
+	- Entire new file.
+
+	* include_gownfull.php:
+	* config.php:
+	* getim.php:
+	- Configuration simplification so they only boils down to installed
+	input method and gownfull URL. Other config are only for one-time
+	usage so hardcoded into include_gownfull.php and getim.php.
+	- Config are stored in WordPress instead of config.php.
+	- Allows selecting some IM to turn on, instead of always enabling all.
+

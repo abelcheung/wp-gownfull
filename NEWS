@@ -1,0 +1,7 @@
+WP-GownFull 0.1
+==================
+* GownFull SVN version 2007-07-11
+* Adds GownFull support to comment text form
+* Admin page for setting which input method should be enabled
+* Store all settings into WordPress database, instead of manually
+  editing config.php

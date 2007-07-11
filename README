@@ -1,0 +1,29 @@
+==================
+ABOUT
+==================
+GownFull is a cross-browser web-based input method engine, which allows
+input of complex scripts (like Chinese) without any input method software
+installed in OS.
+
+WP-GownFull is a WordPress plugin adding GownFull support. This allows
+people who is using English Windows, Linux or whatever platform to
+enter comment in native language.
+
+Right now GownFull only supports Chinese and Greek so far, but the list
+of language will most certainly expand in the future.
+
+==================
+INSTALL
+==================
+1. Create 'gownfull' folder under WordPress plugin directory.
+2. Upload or copy all files, including the 'im' subdirectory, into
+   the above folder you created.
+3. Activate the plugin in WordPress Plugin admin page.
+4. Check which input method you want to activate in Options page.
+
+==================
+CREDITS
+==================
+Thanks should definitely go to the excellent GownFull development team,
+otherwise this plugin would not exist. Please check out their web
+page (http://code.google.com/g/gownfull/) for newest development.

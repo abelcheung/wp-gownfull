@@ -1,5 +1,5 @@
 <?
-if(!$CFG) require_once('config.php');
+if(!isset ($CFG)) require_once('config.php');
 
 header('Content-Type: application/x-javascript');
 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
@@ -10,7 +10,7 @@ header('Pragma: no-cache');
 if(!key_exists('objname',$_GET)) return;
 if(!key_exists('download_callback_id',$_GET)) return;
 
-$file = $CFG->GownFull_IMPath.$_GET['objname'].".js";
+$file = "im/".$_GET['objname'].".js";
 
 if(file_exists($file)) {
 	if(key_exists('component',$_GET)) {
@@ -59,7 +59,9 @@ if(file_exists($file)) {
 			if(ereg('//BEGIN_COMPONENT_SOURCE',$line)) {
 				// send all urls of component
 				for($i=0;$i<count($components);$i++) {
-					printf("'%s': '%s?objname=%s&component=%s'",$components[$i],$CFG->GownFull_BASE.$_SERVER["PHP_SELF"],$_GET['objname'],$components[$i]);
+					printf("'%s': '%s?objname=%s&component=%s'",$components[$i],
+						substr ($CFG->GownFull_URL, 0, strpos ($CFG->GownFull_URL, '/', 7)).$_SERVER["PHP_SELF"],
+						$_GET['objname'],$components[$i]);
 					if($i < count($components)-1) printf(",\n");
 					else printf("\n");
 				}

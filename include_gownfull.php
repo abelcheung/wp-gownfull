@@ -1,5 +1,5 @@
 <?
-if(!$CFG) require_once('config.php');
+if(!isset ($CFG)) require_once('config.php');
 
 header('Content-Type: application/x-javascript');
 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
@@ -8,11 +8,11 @@ header('Cache-Control: no-cache, must-revalidate');
 header('Pragma: no-cache');
 
 if(key_exists('debug',$_GET) && $_GET['debug']) {
-	readfile($CFG->GownFull_javascript_debug_file);
+	readfile('generic_debug.js');
 	$debug = true;
 }
 else {
-	readfile($CFG->GownFull_javascript_file);
+	readfile('generic.js');
 	$debug = false;
 }
 
@@ -31,6 +31,13 @@ else {
 	//printf("%s.modifiers.push(new TimerOutputModifier(%s));\r\n",$CFG->GownFull_InstanceName,$CFG->GownFull_InstanceName);
 	if($debug) printf("GownFull.instance.modifiers.push(new UnicodeImageOutputModifier(GownFull.instance));\r\n");
 	
+	$enabled_im = get_option ('gownfull_enabled_im');
+	foreach ($enabled_im as $im) {
+		if (isset ($CFG->Installed_IM[$im])) {
+			$CFG->Available_IM[] = $CFG->Installed_IM[$im];
+		}
+	}
+
 	if(!$_GET['noregdownload']) {
 		foreach($CFG->Available_IM as $im) {
 			printf("GownFull.instance.RegisterDownload('%s',\"%s\");\r\n",$im['objname'],$im['displayname']);
