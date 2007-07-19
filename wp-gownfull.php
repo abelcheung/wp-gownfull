@@ -53,7 +53,8 @@ function wp_gownfull_action ()
 {
 ?>
 	<script type='text/javascript' src="<?php global $CFG; echo $CFG->GownFull_URL; ?>/include_gownfull.php"></script>
-	<noscript><small><?php _e('(JavaScript support is turned off. GownFull input method engine will not be available.)'); ?></small></noscript>
+	<script type='text/javascript'>document.write ('<p id="wp-gownfull-msg">(GownFull is initialized on top left corner of browser window.)</p>');</script>
+	<noscript><p id="wp-gownfull-msg"><?php _e('(JavaScript support is turned off. GownFull input method engine will not be available.)'); ?></p></noscript>
 <?php
 }
 

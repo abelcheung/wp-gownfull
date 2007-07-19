@@ -1,3 +1,8 @@
+2007-07-19  Abel Cheung  <abelcheung@gmail.com>
+
+	* wp-gownfull.php:
+	Minor change of message when javascript is not enabled.
+
 2007-07-11  Abel Cheung  <abelcheung@gmail.com>
 
 	* wp-gownfull.php:
