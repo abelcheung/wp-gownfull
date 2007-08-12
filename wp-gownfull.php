@@ -132,7 +132,8 @@ function wp_gownfull_admin ()
 	                  'wp_gownfull_config_form');
 }
 
-add_action ('activate_gownfull/wp-gownfull.php', 'wp_gownfull_first_run');
+register_activation_hook (__FILE__, 'wp_gownfull_first_run');
+// add_action ('activate_gownfull/wp-gownfull.php', 'wp_gownfull_first_run');
 add_action ('admin_menu', 'wp_gownfull_admin');
 add_action ('comment_form', 'wp_gownfull_action');
 
